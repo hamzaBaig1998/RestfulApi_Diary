@@ -1,0 +1,199 @@
+<html>
+<head>
+<script src="angular.min.js">
+    </script>
+    <link rel="stylesheet" href="bootstrap.css">
+</head>
+<body ng-app = "myApp" class="bg-dark text-white">
+	<div class="container">
+<div ng-controller="myController">
+	
+		<h3 class="display-4 text-center"><strong>List</strong> <em class="text-primary">Diary</em></h3>
+		<div class="row">
+			<div class="col-md-6 offset-lg-3">
+					<table class="table" ng-controller="ListController">
+						<thead>
+							<tr>
+								<th>User Id</th>
+								<th>Day</th>
+								<th>Content</th>
+								<th>Remove</th>
+							</tr>
+						</thead>
+						<tbody ng-repeat="data in userList">
+							<tr>
+							<td>{{data.Id}}
+							</td>
+							<td>{{data.day}}
+							</td>
+							<td>{{data.content}}
+							</td>
+							<td><input type="button" class="btn btn-danger" value="remove" ng-click=removeRecord(data)>
+							</td>
+						</tr>
+						</tbody>
+					</table>
+			</div>
+		</div>
+
+		<h3 class="display-4 text-center mt-5"><strong>Add New</strong> <em class="text-primary">Diary</em></h3>
+		<div class="row">
+			<div class="col-md-6 offset-md-3">
+				<table class="table">
+					<tr>
+						<td>
+							ID
+						</td>
+						<td>
+							<input type="text" class="form-control" ng-model="users.Id"/>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							Day
+						</td>
+						<td>
+							<input type="text" class="form-control" ng-model="users.day"/>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							Content
+						</td>
+						<td>
+							<input type="text" class="form-control" ng-model="users.content"/>
+						</td>
+					</tr>  
+					<tr>
+						
+						<td>
+							<input type="submit" value="save" class="btn btn-success px-3" ng-click="submitRecord(users)"/>
+						</td>
+						<td>
+							<input type="submit" value="update" class="btn btn-primary" ng-click="updateRecord(users)"/>
+						</td>
+					</tr>  		
+				</table>
+			</div>
+		</div>
+		<h3 class="display-4 text-center mt-5"><strong>Search</strong> <em class="text-primary"> Diary</em></h3>
+		<div class="row">
+			<div class="col-md-6 offset-md-3">
+				
+				<input type="text" name="textId" class="form-control" ng-model="Id">
+				<input type="submit" value="search" class="btn btn-primary my-3" ng-click="findRecord()"/>
+				
+					<table class="table">
+						<tr>
+							<td> Id</td>
+							<td> Name</td>
+							<td> Email </td>
+						</tr>
+						<tr>
+							<td>{{users.Id}}
+							</td>
+							<td>{{users.day}}
+							</td>
+							<td>{{users.content}} {{error}}
+							</td>
+						</tr>
+					</table>
+				</div>
+		</div>
+</div>
+
+	</div>
+<script>
+	var myApp= angular.module('myApp',[]);
+	myApp.controller("myController",function($scope,$http){
+		
+		//this function is called once submit button is clicked
+		$scope.findRecord=function(){
+			var onSuccess = function (data,status,headers,config)
+			{
+			$scope.users=data;
+			console.log($scope.users);
+			};
+			var onError = function (data,status,headers,config)
+			{
+			$scope.error=status;
+			};
+			var promise = $http.get("http://localhost:58951/api/diaries/"+$scope.Id);
+			promise.success(onSuccess);
+			promise.error(onError);
+		};
+		//this function is called once remove button is clicked. Each remove button brings its own data 
+		$scope.removeRecord=function(data){
+			var onSuccess = function (data,status,headers,config)
+			{
+			$scope.userList=data;
+			location.reload();
+			};
+			var onError = function (data,status,headers,config)
+			{
+			$scope.error=status;
+			};
+			var promise=$http.delete('http://localhost:58951/api/diaries/'+data.Id);
+			promise.success(onSuccess);
+			promise.error(onError);
+		};
+		//this function is called once save button is clicked
+		$scope.submitRecord=function(users){
+			var user={
+				"Id":users.Id,
+				"day":users.day,
+				"content":users.content
+			};
+			var onSuccess = function (data,status,headers,config)
+			{
+			$scope.userList=data;
+			location.reload();
+			};
+			var onError = function (data,status,headers,config)
+			{
+			$scope.error=status;
+			};
+			var promise=$http.post('http://localhost:58951/api/diaries', user);
+			promise.success(onSuccess);
+			promise.error(onError);
+		};
+		//this function is called once update button is pressed
+		$scope.updateRecord=function(users){
+			var user={
+				"Id":users.Id,
+				"day":users.day,
+				"content":users.content
+			};
+			console.log(user);
+			var onSuccess = function (data,status,headers,config)
+			{
+			$scope.userList=data;
+			location.reload();
+			};
+			var onError = function (data,status,headers,config)
+			{
+			$scope.error=status;
+			};
+			var promise=$http.put("http://localhost:58951/api/diaries/"+user.Id,user);
+			promise.success(onSuccess);
+			promise.error(onError);
+		};
+	});
+	//this function is called on page load is its scope is only visible inside ListController
+	myApp.controller("ListController",function($scope,$http){
+		var onSuccess = function (data,status,headers,config)
+		{
+		$scope.userList=data;
+		};
+		var onError = function (data,status,headers,config)
+		{
+		$scope.error=status;
+		};
+		var promise = $http.get("http://localhost:58951/api/diaries");
+		promise.success(onSuccess);
+		promise.error(onError);
+	});
+
+</script>
+</body>
+</html>
